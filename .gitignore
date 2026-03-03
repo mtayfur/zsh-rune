@@ -1,0 +1,23 @@
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node / npm (if any tooling is added)
+.npm
+node_modules/
+
+# Secrets / local config
+.env
+.env.local
+*.secret
+
+# Test output / scratch
+tmp/
+*.log
