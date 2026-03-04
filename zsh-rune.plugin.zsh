@@ -22,18 +22,11 @@ source "$_zsh_rune_plugin_dir/zsh-rune-context.sh"
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
-_zsh_rune_escape_json() {
-    emulate -L zsh
-    local s="$1"
-    # Order matters: backslash first, then other escapes
-    s="${s//\\/\\\\}"
-    s="${s//\"/\\\"}"
-    s="${s//$'\t'/\\t}"
-    s="${s//$'\r'/\\r}"
-    s="${s//$'\n'/\\n}"
-    s="${s//$'\f'/\\f}"
-    s="${s//$'\b'/\\b}"
-    printf '%s' "$s"
+_zsh_rune_check_deps() {
+    if ! command -v jq &>/dev/null; then
+        printf 'Error: jq is required (install with: apt install jq, brew install jq, etc.)' >&2
+        return 1
+    fi
 }
 
 _zsh_rune_system_prompt() {
@@ -89,6 +82,8 @@ _zsh_rune_query() {
     emulate -L zsh
     local query="$1" model="${2:-$ZSH_RUNE_MODEL}"
 
+    _zsh_rune_check_deps || return 1
+
     if [[ -z "$ZSH_RUNE_API_KEY" ]]; then
         printf 'Error: ZSH_RUNE_API_KEY not set'
         return 1
@@ -99,11 +94,27 @@ _zsh_rune_query() {
     sys_prompt=$(_zsh_rune_system_prompt) || { printf '%s' "$sys_prompt"; return 1; }
     ctx_all=$(_zsh_rune_context_all)
 
-    local escaped_sys escaped_ctx escaped_q
-    escaped_sys=$(_zsh_rune_escape_json "$sys_prompt")
-    escaped_ctx=$(_zsh_rune_escape_json "$ctx_all")
-    escaped_q=$(_zsh_rune_escape_json "$query")
-    local payload="{\"model\":\"${model}\",\"stream\":false,\"messages\":[{\"role\":\"system\",\"content\":[{\"type\":\"text\",\"text\":\"${escaped_sys}\",\"cache_control\":{\"type\":\"ephemeral\"}}]},{\"role\":\"user\",\"content\":\"Context:\\n${escaped_ctx}\\n\\nRequest: ${escaped_q}\"}],\"max_tokens\":1024,\"temperature\":0.2}"
+    local payload
+    payload=$(jq -c -n \
+        --arg model "$model" \
+        --arg sys_prompt "$sys_prompt" \
+        --arg ctx_all "$ctx_all" \
+        --arg query "$query" \
+        '{
+            model: $model,
+            stream: false,
+            messages: [
+                {
+                    role: "system",
+                    content: [
+                        { type: "text", text: $sys_prompt, cache_control: { type: "ephemeral" } }
+                    ]
+                },
+                { role: "user", content: "Context:\n\($ctx_all)\n\nRequest: \($query)" }
+            ],
+            max_tokens: 1024,
+            temperature: 0.2
+        }')
 
     local response curl_exit
     response=$(curl -sS \
@@ -129,27 +140,12 @@ _zsh_rune_query() {
     fi
 
     local result
-    if command -v jq &>/dev/null; then
-        result=$(printf '%s' "$response" | jq -r '.choices[0].message.content // empty' 2>/dev/null)
-        if [[ -z "$result" ]]; then
-            local err
-            err=$(printf '%s' "$response" | jq -r '.error.message // empty' 2>/dev/null)
-            printf 'Error: %s' "${err:-empty response}"
-            return 1
-        fi
-    else
-        result=$(printf '%s' "$response" | \
-            perl -0777 -ne 'print $1 if /"content":"((?:[^"\\]|\\.)*)"/' 2>/dev/null)
-        if [[ -z "$result" ]]; then
-            printf 'Error: failed to parse response (install jq for better handling)'
-            return 1
-        fi
-        # Unescape JSON string
-        result="${result//\\n/$'\n'}"
-        result="${result//\\t/$'\t'}"
-        result="${result//\\r/}"
-        result="${result//\\\"/\"}"
-        result="${result//\\\\/\\}"
+    result=$(printf '%s' "$response" | jq -r '.choices[0].message.content // empty' 2>/dev/null)
+    if [[ -z "$result" ]]; then
+        local err
+        err=$(printf '%s' "$response" | jq -r '.error.message // empty' 2>/dev/null)
+        printf 'Error: %s' "${err:-empty response}"
+        return 1
     fi
 
     _zsh_rune_sanitize "$result"
@@ -224,6 +220,8 @@ _zsh_rune_accept_line() {
 zsh-rune() {
     emulate -L zsh
 
+    _zsh_rune_check_deps || return 1
+
     local model="$ZSH_RUNE_MODEL"
     while [[ $# -gt 0 ]]; do
         case "$1" in
@@ -242,11 +240,11 @@ Options:
 
 Config (set in ~/.zshrc):
   ZSH_RUNE_API_KEY        Required. Your OpenRouter API key
-  ZSH_RUNE_MODEL            Model to use (default: qwen/qwen3.5-35b-a3b)
-  ZSH_RUNE_TIMEOUT          API timeout in seconds (default: 30)
-  ZSH_RUNE_ANIM             Typewriter animation 0/1 (default: 1)
-  ZSH_RUNE_HISTORY          Save queries to shell history 0/1 (default: 1)
-  ZSH_RUNE_PROMPT_EXTEND    Extra rules for the system prompt
+  ZSH_RUNE_MODEL          Model to use (default: qwen/qwen3.5-35b-a3b)
+  ZSH_RUNE_TIMEOUT        API timeout in seconds (default: 30)
+  ZSH_RUNE_ANIM           Typewriter animation 0/1 (default: 1)
+  ZSH_RUNE_HISTORY        Save queries to shell history 0/1 (default: 1)
+  ZSH_RUNE_PROMPT_EXTEND  Extra rules for the system prompt
 
 https://github.com/zsh-rune
 HELP

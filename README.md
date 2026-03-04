@@ -98,5 +98,4 @@ export ZSH_RUNE_PROMPT_EXTEND="Always use ripgrep instead of grep. Prefer fd ove
 
 - ZSH 5.0+
 - `curl`
-- `perl` (included with macOS and most Linux distros)
-- `jq` (optional — perl fallback used if missing)
+- `jq`
