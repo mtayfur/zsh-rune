@@ -41,19 +41,18 @@ zsh-rune --help
 
 The plugin automatically sends shell context to help the model generate better commands:
 
-- Current directory and file listing
+- Shell version, OS, and architecture
+- Current user and environment (WSL, display server, editor)
+- Working directory and file listing
 - Git branch and status
-- Project type (node, python, rust, go, etc.)
-- OS and architecture
-- Recent command history
-- Available tools (docker, kubectl, npm, etc.)
+- Available tools (docker, npm, cargo, python3, etc.)
 
 ## Installation
 
 ### Oh My Zsh
 
 ```zsh
-git clone https://github.com/your-user/zsh-rune ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-rune
+git clone https://github.com/mtayfur/zsh-rune ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-rune
 ```
 
 Add to `~/.zshrc`:
