@@ -1,0 +1,109 @@
+# zsh-rune context file filtering rules
+# Assign shell patterns to these arrays.
+
+skip_patterns=(
+    .git
+    .svn
+    .hg
+    node_modules
+    bower_components
+    .venv
+    venv
+    __pycache__
+    .tox
+    .nox
+    .direnv
+    .cache
+    .yarn
+    .pnp
+    .idea
+    .vscode
+    .pytest_cache
+    .mypy_cache
+    .ruff_cache
+    .turbo
+    .parcel-cache
+    .sass-cache
+    .eslintcache
+    .stylelintcache
+    .gradle
+    .mvn
+    .terraform
+    .vagrant
+    .serverless
+    .DS_Store
+    Thumbs.db
+    '.env*'
+    '*.min.js'
+    '*.min.css'
+)
+
+deprioritize_patterns=(
+    dist
+    build
+    target
+    coverage
+    out
+    output
+    bin
+    obj
+    tmp
+    temp
+    vendor
+    Pods
+    generated
+    __generated__
+    .next
+    .nuxt
+    storybook-static
+    '*.generated.*'
+)
+
+prefer_patterns=(
+    README
+    'README.*'
+    CONTRIBUTING.md
+    CHANGELOG.md
+    package.json
+    package-lock.json
+    pnpm-lock.yaml
+    pnpm-workspace.yaml
+    yarn.lock
+    bun.lock
+    bun.lockb
+    turbo.json
+    tsconfig.json
+    deno.json
+    pyproject.toml
+    poetry.lock
+    uv.lock
+    requirements.txt
+    'requirements-*.txt'
+    'requirements_*.txt'
+    Pipfile
+    Pipfile.lock
+    Cargo.toml
+    go.mod
+    Gemfile
+    composer.json
+    pom.xml
+    'build.gradle*'
+    Dockerfile
+    'Dockerfile.*'
+    docker-compose.yml
+    docker-compose.yaml
+    compose.yml
+    compose.yaml
+    Makefile
+    .gitignore
+    .env.example
+    '.env.*.example'
+    .tool-versions
+    .mise.toml
+    AGENTS.md
+    CLAUDE.md
+    .github
+    biome.json
+    'eslint.config.*'
+    'prettier.config.*'
+)

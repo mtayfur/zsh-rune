@@ -20,7 +20,7 @@ Context:
     Display: yes
     Editor: <$EDITOR>
     Dir: <working directory>
-    Files: <visible files>
+    Files: <representative top-level files>
     Git: <branch> (clean|dirty)
     Commands: <available shell commands/programs>
 
@@ -31,7 +31,7 @@ Guidelines:
 - Use OS for platform-appropriate commands and flags
 - Commands lists available shell commands/programs
 - If Commands is present, prefer those when they are suitable for the task
-- Files may be truncated; when inspection is needed, use commands from Commands in the generated snippet instead of guessing paths
+- Files may be filtered or truncated; when inspection is needed, use commands from Commands in the generated snippet instead of guessing paths
 - Use Dir, Files, and Git for real paths and branch names; do not invent filenames
 - If not root, use sudo only when required; use $EDITOR for edits; use GUI commands only when Display is present
 - In WSL, use wslpath for path conversion and Windows executables when appropriate

@@ -7,12 +7,13 @@ PLUGIN_NAME="zsh-rune"
 PLUGIN_FILE="zsh-rune.plugin.zsh"
 CONTEXT_FILE="zsh-rune-context.sh"
 PROMPT_FILE="zsh-rune-prompt.txt"
+RULES_FILE="zsh-rune-context-rules.zsh"
 PLUGIN_DIR="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/${PLUGIN_NAME}"
 
 # Resolve script directory so this works from any cwd
 SCRIPT_DIR="${0:A:h}"
 
-for f in "$PLUGIN_FILE" "$CONTEXT_FILE" "$PROMPT_FILE"; do
+for f in "$PLUGIN_FILE" "$CONTEXT_FILE" "$PROMPT_FILE" "$RULES_FILE"; do
     if [[ ! -f "${SCRIPT_DIR}/${f}" ]]; then
         print "install.sh: ${f} not found in ${SCRIPT_DIR}" >&2
         exit 1
@@ -24,6 +25,7 @@ mkdir -p "${PLUGIN_DIR}"
 cp "${SCRIPT_DIR}/${PLUGIN_FILE}" "${PLUGIN_DIR}/${PLUGIN_FILE}"
 cp "${SCRIPT_DIR}/${CONTEXT_FILE}" "${PLUGIN_DIR}/${CONTEXT_FILE}"
 cp "${SCRIPT_DIR}/${PROMPT_FILE}" "${PLUGIN_DIR}/${PROMPT_FILE}"
+cp "${SCRIPT_DIR}/${RULES_FILE}" "${PLUGIN_DIR}/${RULES_FILE}"
 print "Done."
 print ""
 print "Next steps:"

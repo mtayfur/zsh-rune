@@ -20,6 +20,7 @@ source "$_zsh_rune_plugin_dir/zsh-rune-context.sh"
 : ${ZSH_RUNE_HISTORY:=1}
 : ${ZSH_RUNE_MAX_THREAD_ROUNDS:=10}
 # ZSH_RUNE_PROMPT_EXTEND — optional extra rules appended to the system prompt
+# ZSH_RUNE_CONTEXT_RULES_FILE — optional override for file filtering rules
 
 typeset -ga _ZSH_RUNE_THREAD_Q=()
 typeset -ga _ZSH_RUNE_THREAD_A=()

@@ -100,12 +100,40 @@ Get a key at [openrouter.ai/keys](https://openrouter.ai/keys). The free tier wor
 | `ZSH_RUNE_HISTORY` | `1` | Save `# queries` to shell history (`1` = on, `0` = off) |
 | `ZSH_RUNE_MAX_THREAD_ROUNDS` | `10` | Max rounds kept in memory for `##` / `#N` follow-ups |
 | `ZSH_RUNE_PROMPT_EXTEND` | — | Extra instructions appended to the system prompt |
+| `ZSH_RUNE_CONTEXT_RULES_FILE` | `zsh-rune-context-rules.zsh` | Optional override for file filtering and prioritization rules |
 
 ### Custom instructions
 
 ```zsh
 export ZSH_RUNE_PROMPT_EXTEND="Always use ripgrep instead of grep. Prefer fd over find."
 ```
+
+### Context file rules
+
+The top-level `Files:` list is driven by `zsh-rune-context-rules.zsh`.
+You can point the plugin at your own rules file:
+
+```zsh
+export ZSH_RUNE_CONTEXT_RULES_FILE="$HOME/.config/zsh-rune/context-rules.zsh"
+```
+
+The rules file is a zsh snippet that assigns three arrays:
+
+```zsh
+skip_patterns=( .git node_modules .venv )
+deprioritize_patterns=( dist build target )
+prefer_patterns=( README 'README.*' package.json pyproject.toml .gitignore )
+```
+
+Quote any pattern that contains `*` so it stays a pattern instead of expanding to files while the rules file is loaded.
+
+`skip_patterns` is also extended automatically from readable ignore files, with de-duplication:
+
+- Current directory: `.gitignore`, `.ignore`, `.fdignore`, `.rgignore`
+- Git repo local excludes: `.git/info/exclude`
+- Global git ignores: `core.excludesfile`, `~/.config/git/ignore`, `~/.gitignore`, `~/.gitignore_global`
+
+Only simple top-level ignore entries are imported into `Files:` filtering. Nested path rules and unignore rules like `!keep-me` are ignored.
 
 ## Requirements
 
