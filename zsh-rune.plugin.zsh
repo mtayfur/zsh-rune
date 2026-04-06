@@ -145,10 +145,6 @@ _zsh_rune_sanitize() {
     text="${text#\$ }"
     text="${text#\# }"
 
-    # Strip leading/trailing blank lines
-    while [[ "$text" == $'\n'* ]]; do text="${text#$'\n'}"; done
-    while [[ "$text" == *$'\n' ]]; do text="${text%$'\n'}"; done
-
     printf '%s' "$text"
 }
 

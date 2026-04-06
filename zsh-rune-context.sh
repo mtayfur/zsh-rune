@@ -29,6 +29,11 @@ _zsh_rune_unique_items() {
     done
 }
 
+_zsh_rune_in_git_repo() {
+    emulate -L zsh
+    git rev-parse --is-inside-work-tree &>/dev/null
+}
+
 _zsh_rune_ignore_line_to_pattern() {
     emulate -L zsh
     local line
@@ -36,13 +41,9 @@ _zsh_rune_ignore_line_to_pattern() {
 
     [[ -n "$line" ]] || return 0
 
-    if [[ "$line" == \\#* ]]; then
+    if [[ "$line" == \\#* || "$line" == \\!* ]]; then
         line="${line#\\}"
-    elif [[ "$line" == \\!* ]]; then
-        line="${line#\\}"
-    elif [[ "$line" == \#* ]]; then
-        return 0
-    elif [[ "$line" == \!* ]]; then
+    elif [[ "$line" == \#* || "$line" == \!* ]]; then
         return 0
     fi
 
@@ -86,7 +87,7 @@ _zsh_rune_collect_ignore_files() {
         [[ -r "$file" ]] && ignore_files+=("$file")
     done
 
-    if git rev-parse --is-inside-work-tree &>/dev/null; then
+    if _zsh_rune_in_git_repo; then
         git_dir=$(git rev-parse --git-dir 2>/dev/null)
         [[ -n "$git_dir" && -r "$git_dir/info/exclude" ]] && ignore_files+=("$git_dir/info/exclude")
     fi
@@ -135,6 +136,8 @@ _zsh_rune_context_all() {
     # Workspace
     ctx+=$'\n'"Dir: ${PWD}"
     local -a entries=( *(DN) )
+    local in_git_repo=0
+    _zsh_rune_in_git_repo && in_git_repo=1
     local rules_file default_rules_file
     default_rules_file="${_zsh_rune_plugin_dir}/zsh-rune-context-rules.zsh"
     rules_file="${ZSH_RUNE_CONTEXT_RULES_FILE:-$default_rules_file}"
@@ -167,12 +170,7 @@ _zsh_rune_context_all() {
         fi
     done
 
-    candidates=( "${(@)preferred_entries}" "${(@)normal_entries}" )
-    if (( ${#candidates} == 0 )); then
-        candidates=( "${(@)deprioritized_entries}" )
-    else
-        candidates+=( "${(@)deprioritized_entries}" )
-    fi
+    candidates=( "${(@)preferred_entries}" "${(@)normal_entries}" "${(@)deprioritized_entries}" )
 
     count=${#candidates}
     if (( count > 0 )); then
@@ -181,10 +179,11 @@ _zsh_rune_context_all() {
         ctx+=$'\n'"Files: ${(j:, :)shown}"
         (( count > shown_count )) && ctx+=" (+$((count - shown_count)) more)"
     fi
-    if git rev-parse --is-inside-work-tree &>/dev/null; then
-        local branch gst
+    if (( in_git_repo )); then
+        local branch gst status_line
         branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
-        [[ -n $(git status --porcelain 2>/dev/null | head -1) ]] && gst=dirty || gst=clean
+        IFS= read -r status_line < <(git status --porcelain 2>/dev/null)
+        [[ -n "$status_line" ]] && gst=dirty || gst=clean
         ctx+=$'\n'"Git: ${branch:-detached} ($gst)"
     fi
 
