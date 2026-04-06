@@ -2,6 +2,8 @@
 
 > AI command completion for ZSH via OpenRouter.
 
+Supports `zsh` on macOS and Linux.
+
 Type what you want in plain English, get the exact command — ready to run.
 
 ```zsh
@@ -17,6 +19,12 @@ $ docker ps --format "table {{.Names}}\t{{.Size}}"
 
 The command never runs automatically. You always see it first.
 
+Interactive follow-ups keep a short in-memory thread for the current shell session:
+
+- `# ` starts a new thread
+- `## ` is shorthand for `#1 ` and reuses up to the last 1 round
+- `#N ` reuses up to the last `N` rounds
+
 ## Usage
 
 ### Interactive Mode
@@ -28,14 +36,18 @@ Type `# ` followed by your request and press **Enter**:
 # find recent git changes with authorship
 ```
 
-### CLI Mode
-Use the `zsh-rune` command directly:
+Refine the previous result with follow-ups:
 
 ```zsh
-zsh-rune "list all npm packages with outdated versions"
-zsh-rune -m openai/gpt-4o "search for files modified today"
-zsh-rune --help
+# docker list containers
+## also show sizes
+#1 keep only running containers
+#3 sort by size descending and keep the headers
+# new unrelated task
 ```
+
+Only the previous natural-language requests and generated or edited commands are sent as follow-up history. Command output is not captured.
+If you cancel a suggested command with `Ctrl+C`, it stays in history — the model will see it and can avoid repeating the same mistake when you send a follow-up.
 
 ## Context
 
@@ -86,6 +98,7 @@ Get a key at [openrouter.ai/keys](https://openrouter.ai/keys). The free tier wor
 | `ZSH_RUNE_TIMEOUT` | `30` | API request timeout in seconds |
 | `ZSH_RUNE_ANIM` | `1` | Typewriter animation (`1` = on, `0` = off) |
 | `ZSH_RUNE_HISTORY` | `1` | Save `# queries` to shell history (`1` = on, `0` = off) |
+| `ZSH_RUNE_MAX_THREAD_ROUNDS` | `10` | Max rounds kept in memory for `##` / `#N` follow-ups |
 | `ZSH_RUNE_PROMPT_EXTEND` | — | Extra instructions appended to the system prompt |
 
 ### Custom instructions

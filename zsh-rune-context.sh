@@ -30,7 +30,7 @@ _zsh_rune_context_all() {
         ctx+=$'\n'"Git: ${branch:-detached} ($gst)"
     fi
 
-    # Available tools
+    # Available commands
     local -a tools=()
     local tool
     for tool in \
@@ -42,7 +42,7 @@ _zsh_rune_context_all() {
         nvm fnm pyenv rbenv rustup mise; do
         command -v "$tool" &>/dev/null && tools+=("$tool")
     done
-    (( ${#tools} )) && ctx+=$'\n'"Tools: ${(j:, :)tools}"
+    (( ${#tools} )) && ctx+=$'\n'"Commands: ${(j:, :)tools}"
 
     printf '%s' "$ctx"
 }
