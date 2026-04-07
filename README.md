@@ -46,8 +46,8 @@ Refine the previous result with follow-ups:
 # new unrelated task
 ```
 
-Only the previous natural-language requests and generated or edited commands are sent as follow-up history. Command output is not captured.
-If you cancel a suggested command with `Ctrl+C`, it stays in history — the model will see it and can avoid repeating the same mistake when you send a follow-up.
+Only the previous natural-language requests and executed or edited commands are sent as follow-up history. Command output is not captured.
+If you cancel or replace a suggested command before running it, only your `#` request stays in history for follow-ups.
 
 ## Context
 

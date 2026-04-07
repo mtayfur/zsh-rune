@@ -25,7 +25,6 @@ source "$_zsh_rune_plugin_dir/zsh-rune-context.sh"
 typeset -ga _ZSH_RUNE_THREAD_Q=()
 typeset -ga _ZSH_RUNE_THREAD_A=()
 typeset -g _ZSH_RUNE_PENDING_IDX=""
-typeset -g _ZSH_RUNE_PENDING_QUERY=""
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -151,7 +150,19 @@ _zsh_rune_sanitize() {
 _zsh_rune_pending_clear() {
     emulate -L zsh
     _ZSH_RUNE_PENDING_IDX=""
-    _ZSH_RUNE_PENDING_QUERY=""
+}
+
+_zsh_rune_thread_drop_pending_response() {
+    emulate -L zsh
+
+    [[ -z "$_ZSH_RUNE_PENDING_IDX" ]] && return
+
+    local idx=$(( _ZSH_RUNE_PENDING_IDX ))
+    if (( idx >= 1 && idx <= ${#_ZSH_RUNE_THREAD_A} )); then
+        _ZSH_RUNE_THREAD_A[$idx]=""
+    fi
+
+    _zsh_rune_pending_clear
 }
 
 _zsh_rune_thread_clear() {
@@ -187,7 +198,6 @@ _zsh_rune_thread_append() {
 
     if (( track_pending )); then
         _ZSH_RUNE_PENDING_IDX=${#_ZSH_RUNE_THREAD_A}
-        _ZSH_RUNE_PENDING_QUERY="$query"
     else
         _zsh_rune_pending_clear
     fi
@@ -231,7 +241,10 @@ _zsh_rune_history_messages_json() {
     local filter='['
     for (( i = 1; i <= round; i++ )); do
         (( i > 1 )) && filter+=','
-        filter+="{role:\"user\",content:\$q${i}},{role:\"assistant\",content:\$a${i}}"
+        filter+="{role:\"user\",content:\$q${i}}"
+        if [[ -n "${_ZSH_RUNE_THREAD_A[$(( start + i - 1 ))]}" ]]; then
+            filter+=",{role:\"assistant\",content:\$a${i}}"
+        fi
     done
     filter+=']'
 
@@ -357,6 +370,8 @@ _zsh_rune_accept_line() {
         return
     fi
 
+    _zsh_rune_thread_drop_pending_response
+
     if [[ "$mode" == 'new' ]]; then
         # A fresh request should not leave the previous follow-up thread available.
         _zsh_rune_thread_clear
@@ -391,6 +406,7 @@ _zsh_rune_accept_line() {
 
     if [[ -n "$cmd" && "$cmd" != Error:* ]]; then
         _zsh_rune_thread_append "$query" "$cmd" 1
+        (( ZSH_RUNE_HISTORY )) && print -s -- "$saved"
 
         if (( ZSH_RUNE_ANIM )); then
             BUFFER="${saved}"$'\n'
@@ -407,8 +423,6 @@ _zsh_rune_accept_line() {
             BUFFER="${saved}"$'\n'"${cmd}"
         fi
 
-        # Optionally save the original "# request" to shell history — deferred
-        # to preexec so it only fires if the command is actually run.
         BUFFER="$cmd"
         CURSOR=$#BUFFER
     else
@@ -424,18 +438,13 @@ _zsh_rune_preexec() {
 
     [[ -z "$_ZSH_RUNE_PENDING_IDX" ]] && return
 
-    # Save the original "# request" to zsh history only when the command is
-    # actually executed — not when it was rejected with Ctrl+C.
-    (( ZSH_RUNE_HISTORY )) && [[ -n "$_ZSH_RUNE_PENDING_QUERY" ]] && \
-        print -s -- "$_ZSH_RUNE_PENDING_QUERY"
-
     _zsh_rune_thread_finalize_pending "$1"
 }
 
 _zsh_rune_send_break() {
     emulate -L zsh
 
-    _zsh_rune_pending_clear
+    _zsh_rune_thread_drop_pending_response
     zle .send-break
 }
 
