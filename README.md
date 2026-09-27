@@ -81,6 +81,9 @@ Run the included install script to copy the plugin into your oh-my-zsh custom pl
 ./install.sh
 ```
 
+After installing or updating, start a new zsh session with `exec zsh`. Re-sourcing `~/.zshrc` does not reload an already loaded
+copy of the plugin.
+
 ## Configuration
 
 Set your API key — required:
@@ -99,7 +102,7 @@ Get a key at [openrouter.ai/keys](https://openrouter.ai/keys). The free tier wor
 | `ZSH_RUNE_ANIM` | `1` | Typewriter animation (`1` = on, `0` = off) |
 | `ZSH_RUNE_HISTORY` | `1` | Save `# queries` to shell history (`1` = on, `0` = off) |
 | `ZSH_RUNE_MAX_THREAD_ROUNDS` | `10` | Max rounds kept in memory for `##` / `#N` follow-ups |
-| `ZSH_RUNE_PROMPT_EXTEND` | — | Extra instructions appended to the system prompt |
+| `ZSH_RUNE_PROMPT_EXTEND` | — | Extra instructions appended to the command-generation system prompt |
 | `ZSH_RUNE_CONTEXT_RULES_FILE` | `zsh-rune-context-rules.zsh` | Optional override for file filtering and prioritization rules |
 
 ### Custom instructions
@@ -137,6 +140,6 @@ Only simple top-level ignore entries are imported into `Files:` filtering. Neste
 
 ## Requirements
 
-- ZSH 5.0+
+- ZSH 5.0+ with the standard `zsh/system` module
 - `curl`
 - `jq`
