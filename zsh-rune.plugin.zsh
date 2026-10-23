@@ -174,29 +174,20 @@ _zsh_rune_thread_append() {
 _zsh_rune_history_messages_json() {
     emulate -L zsh
 
-    local max_depth="$1"
     local total=${#_ZSH_RUNE_THREAD_Q}
-    if (( total == 0 || max_depth < 1 )); then
+    if (( total == 0 )); then
         printf '[]'
         return
     fi
 
-    (( max_depth > total )) && max_depth=$total
-    local start=$(( total - max_depth + 1 ))
-
     local -a jq_args=()
-    local i round=0
-    for (( i = start; i <= total; i++ )); do
-        round=$(( round + 1 ))
-        jq_args+=(--arg "q${round}" "${_ZSH_RUNE_THREAD_Q[$i]}")
-        jq_args+=(--arg "a${round}" "${_ZSH_RUNE_THREAD_A[$i]}")
-    done
-
-    local filter='['
-    for (( i = 1; i <= round; i++ )); do
+    local i filter='['
+    for (( i = 1; i <= total; i++ )); do
         (( i > 1 )) && filter+=','
+        jq_args+=(--arg "q${i}" "${_ZSH_RUNE_THREAD_Q[$i]}")
         filter+="{role:\"user\",content:\$q${i}}"
-        if [[ -n "${_ZSH_RUNE_THREAD_A[$(( start + i - 1 ))]}" ]]; then
+        if [[ -n "${_ZSH_RUNE_THREAD_A[$i]}" ]]; then
+            jq_args+=(--arg "a${i}" "${_ZSH_RUNE_THREAD_A[$i]}")
             filter+=",{role:\"assistant\",content:\$a${i}}"
         fi
     done
@@ -309,26 +300,14 @@ _zsh_rune_accept_line() {
         return
     fi
 
-    local mode="" history_depth=0 query=""
+    local mode="" query=""
 
     if [[ "$BUFFER" == '# '* ]]; then
         mode="new"
         query="${BUFFER:2}"
     elif [[ "$BUFFER" == '## '* ]]; then
         mode="followup"
-        history_depth=1
         query="${BUFFER:3}"
-    elif [[ "$BUFFER" == '#'<->' '* ]]; then
-        local remainder="${BUFFER#\#}"
-        local depth_text="${remainder%% *}"
-        history_depth=$(( 10#$depth_text ))
-        if (( history_depth < 1 )); then
-            zle -M 'Error: follow-up depth must be >= 1'
-            zle reset-prompt
-            return 1
-        fi
-        mode="followup"
-        query="${remainder#* }"
     else
         zle _zsh-rune-original-accept-line -- "$@"
         return
@@ -345,7 +324,7 @@ _zsh_rune_accept_line() {
         _zsh_rune_thread_clear
     else
         _zsh_rune_thread_drop_pending_response
-        history_json=$(_zsh_rune_history_messages_json "$history_depth") || {
+        history_json=$(_zsh_rune_history_messages_json) || {
             zle -M 'Error: cannot build follow-up history'
             return 1
         }

@@ -22,8 +22,7 @@ The command never runs automatically. You always see it first.
 Interactive follow-ups keep a short in-memory thread for the current shell session:
 
 - `# ` starts a new thread
-- `## ` is shorthand for `#1 ` and reuses up to the last 1 round
-- `#N ` reuses up to the last `N` rounds
+- `## ` continues the current thread until the next `# `
 
 ## Usage
 
@@ -41,8 +40,8 @@ Refine the previous result with follow-ups:
 ```zsh
 # docker list containers
 ## also show sizes
-#1 keep only running containers
-#3 sort by size descending and keep the headers
+## keep only running containers
+## sort by size descending and keep the headers
 # new unrelated task
 ```
 
@@ -101,7 +100,7 @@ Get a key at [openrouter.ai/keys](https://openrouter.ai/keys). The free tier wor
 | `ZSH_RUNE_TIMEOUT` | `30` | API request timeout in seconds |
 | `ZSH_RUNE_ANIM` | `1` | Typewriter animation (`1` = on, `0` = off) |
 | `ZSH_RUNE_HISTORY` | `1` | Save `# queries` to shell history (`1` = on, `0` = off) |
-| `ZSH_RUNE_MAX_THREAD_ROUNDS` | `10` | Max rounds kept in memory for `##` / `#N` follow-ups |
+| `ZSH_RUNE_MAX_THREAD_ROUNDS` | `10` | Max rounds kept in memory for `##` follow-ups |
 | `ZSH_RUNE_PROMPT_EXTEND` | — | Extra instructions appended to the command-generation system prompt |
 | `ZSH_RUNE_CONTEXT_RULES_FILE` | `zsh-rune-context-rules.zsh` | Optional override for file filtering and prioritization rules |
 
